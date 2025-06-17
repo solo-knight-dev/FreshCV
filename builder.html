@@ -97,6 +97,27 @@
   outline: none; 
    }
 
+  button {
+  background: #007bf6;
+  color: #fff;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+button:hover{
+    background-color: #0044ff;
+}
+
+button:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
 
   </style>
 </head>
@@ -145,7 +166,8 @@
       <h2>Skills</h2>
       <div class="form-group">
         <input type="text" placeholder="E.g. JavaScript, Teamwork" />
-      </div>
+      </div><br>
+      <button>Generate</button>
     </div>
 
     <div class="preview-section">
@@ -173,7 +195,7 @@
           <li>JavaScript</li>
           <li>Teamwork</li>
           <li>Problem Solving</li>
-        </ul>
+        </ul><br>
 
         <a href="#" class="download-btn">Download PDF</a>
       </div>
