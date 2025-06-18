@@ -29,16 +29,18 @@
 
     label {
       display: block;
-      margin-top: 10px;
+      margin-top: 15px;
       font-weight: 600;
     }
 
     input, select, textarea {
       width: 100%;
       padding: 10px;
-      margin-top: 4px;
+      margin-top: 6px;
+      margin-bottom: 12px;
       border-radius: 8px;
       border: 1px solid #ccc;
+      box-sizing: border-box;
     }
 
     textarea {
@@ -61,11 +63,19 @@
       margin-top: 40px;
       border-top: 2px dashed #ccc;
       padding-top: 30px;
-      min-height: 1000px; /* 🚀 Increased height for full-length resumes */
+      min-height: 1000px;
     }
 
     ul {
       margin: 5px 0 15px 20px;
+    }
+
+    /* Profile Image */
+    .profile-pic {
+      max-width: 120px;
+      max-height: 120px;
+      border-radius: 50%;
+      margin-bottom: 15px;
     }
 
     /* Template styles */
@@ -93,12 +103,52 @@
     .premium-template h1 {
       color: #f39c12;
     }
+
+    /* Custom file upload styling */
+    .file-upload-wrapper {
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+    }
+
+    .custom-file-upload {
+      padding: 10px 16px;
+      background-color: #2196F3;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.3s;
+    }
+
+    .custom-file-upload:hover {
+      background-color: #1976D2;
+    }
+
+    .custom-file-upload input[type="file"] {
+      display: none;
+    }
+
+    #file-name {
+      margin-left: 10px;
+      font-size: 14px;
+      color: #555;
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
   <h1>FreshCV Builder</h1>
+
+  <label for="photo">Upload Profile Photo</label>
+  <div class="file-upload-wrapper">
+    <label class="custom-file-upload">
+      <input type="file" id="photo" accept="image/*" />
+      Upload Photo
+    </label>
+    <span id="file-name">No file chosen</span>
+  </div>
 
   <label for="name">Full Name</label>
   <input type="text" id="name" placeholder="John Doe" />
@@ -138,9 +188,24 @@
 </div>
 
 <script>
+  let profileImageBase64 = '';
+
+  document.getElementById('photo').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    document.getElementById('file-name').textContent = file.name;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      profileImageBase64 = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
   const templates = {
     classic: (data) => `
       <div class="classic-template" id="resume-content">
+        ${data.photo ? `<img src="${data.photo}" class="profile-pic" alt="Profile Photo">` : ''}
         <h1>${data.name}</h1>
         <p><strong>${data.title}</strong></p>
         <p>Email: ${data.email}</p>
@@ -156,6 +221,7 @@
 
     modern: (data) => `
       <div class="modern-template" id="resume-content">
+        ${data.photo ? `<img src="${data.photo}" class="profile-pic" alt="Profile Photo">` : ''}
         <h1>${data.name}</h1>
         <h3>${data.title}</h3>
         <p>${data.email}</p>
@@ -171,6 +237,7 @@
 
     premium: (data) => `
       <div class="premium-template" id="resume-content">
+        ${data.photo ? `<img src="${data.photo}" class="profile-pic" alt="Profile Photo">` : ''}
         <h1>${data.name}</h1>
         <h4>${data.title}</h4>
         <p>${data.email}</p>
@@ -195,6 +262,7 @@
       hobbies: document.getElementById("hobbies").value.split(',').map(h => h.trim()),
       experience: document.getElementById("experience").value,
       education: document.getElementById("education").value,
+      photo: profileImageBase64
     };
 
     const selected = document.getElementById("template-select").value;
@@ -214,9 +282,8 @@
     const canvas = await html2canvas(content, { scale: 2 });
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jspdf.jsPDF("p", "mm", "a4");
-    const imgProps = pdf.getImageProperties(imgData);
     const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
     pdf.save("resume.pdf");
