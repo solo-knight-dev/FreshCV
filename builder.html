@@ -13,7 +13,6 @@
       background: #f5f5f5;
       padding: 20px;
     }
-
     .container {
       max-width: 1000px;
       margin: auto;
@@ -22,18 +21,8 @@
       border-radius: 12px;
       box-shadow: 0 0 15px rgba(0,0,0,0.1);
     }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: 600;
-    }
-
+    h1 { text-align: center; margin-bottom: 30px; }
+    label { display: block; margin-top: 15px; font-weight: 600; }
     input, select, textarea {
       width: 100%;
       padding: 10px;
@@ -41,13 +30,8 @@
       margin-bottom: 12px;
       border-radius: 8px;
       border: 1px solid #ccc;
-      box-sizing: border-box;
     }
-
-    textarea {
-      resize: vertical;
-    }
-
+    textarea { resize: vertical; }
     button {
       margin-top: 20px;
       padding: 12px 20px;
@@ -59,40 +43,19 @@
       cursor: pointer;
       margin-right: 10px;
     }
-
     #resume-preview {
       margin-top: 40px;
       border-top: 2px dashed #ccc;
       padding-top: 30px;
       min-height: 1000px;
     }
-
-    ul {
-      margin: 5px 0 15px 20px;
-    }
-
-    /* Profile Image */
-    .profile-pic {
-      max-width: 120px;
-      max-height: 120px;
-      border-radius: 50%;
-      margin-bottom: 15px;
-    }
-
-    /* Template styles */
-    .classic-template {
-      font-family: 'Georgia', serif;
-      color: #000;
-    }
-
+    .classic-template { margin-left: 40px; }
     .modern-template {
-      font-family: 'Helvetica Neue', sans-serif;
       background: linear-gradient(to right, #6dd5ed, #2193b0);
       color: white;
       padding: 30px;
       border-radius: 8px;
     }
-
     .premium-template {
       background: #fff;
       border-left: 8px solid #f39c12;
@@ -100,195 +63,89 @@
       font-family: 'Segoe UI', sans-serif;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
-    .premium-template h1 {
-      color: #f39c12;
-    }
-
-    /* Custom file upload styling */
-    .file-upload-wrapper {
-      margin-top: 6px;
-      display: flex;
-      align-items: center;
-    }
-
-    .custom-file-upload {
-      padding: 10px 16px;
-      background-color: #2196F3;
-      color: white;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: background-color 0.3s;
-    }
-
-    .custom-file-upload:hover {
-      background-color: #1976D2;
-    }
-
-    .custom-file-upload input[type="file"] {
-      display: none;
-    }
-
-    #file-name {
-      margin-left: 10px;
-      font-size: 14px;
-      color: #555;
-    }
+    .premium-template h1 { color: #f39c12; }
   </style>
 </head>
 <body>
-
 <div class="container">
   <h1>FreshCV Builder</h1>
-
-  <label for="photo">Upload Profile Photo</label>
-  <div class="file-upload-wrapper">
-    <label class="custom-file-upload">
-      <input type="file" id="photo" accept="image/*" />
-      Upload Photo
-    </label>
-    <span id="file-name">No file chosen</span>
-  </div>
-
   <label for="name">Full Name</label>
   <input type="text" id="name" placeholder="John Doe" />
-
   <label for="title">Job Title</label>
   <input type="text" id="title" placeholder="Web Developer" />
-
   <label for="email">Email</label>
   <input type="email" id="email" placeholder="you@example.com" />
-
   <label for="objective">Career Objective</label>
-  <textarea id="objective" rows="3" placeholder="To obtain a position..."></textarea>
-
+  <textarea id="objective"></textarea>
   <label for="skills">Skills (comma-separated)</label>
-  <input type="text" id="skills" placeholder="HTML, CSS, JavaScript" />
-
+  <input type="text" id="skills" />
   <label for="hobbies">Hobbies (comma-separated)</label>
-  <input type="text" id="hobbies" placeholder="Reading, Gaming, Traveling" />
-
+  <input type="text" id="hobbies" />
   <label for="experience">Experience</label>
-  <textarea id="experience" rows="4" placeholder="Company - Role - Duration"></textarea>
-
-  <label for="education">Education / Degree</label>
-  <textarea id="education" rows="3" placeholder="University Name - Degree - Year"></textarea>
-
-  <label for="template-select">Select Template</label>
-  <select id="template-select">
+  <textarea id="experience"></textarea>
+  <label for="education">Education</label>
+  <textarea id="education"></textarea>
+  <label for="template">Select Template</label>
+  <select id="template">
     <option value="classic">Classic</option>
     <option value="modern">Modern</option>
     <option value="premium">Premium</option>
   </select>
-
-  <button id="generate-btn">Generate Resume</button>
-  <button id="download-btn">Download PDF</button>
-
+  <button onclick="generateResume()">Generate Resume</button>
+  <button onclick="downloadPDF()">Download PDF</button>
   <div id="resume-preview"></div>
 </div>
-
 <script>
-  let profileImageBase64 = '';
-
-  document.getElementById('photo').addEventListener('change', function(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    document.getElementById('file-name').textContent = file.name;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      profileImageBase64 = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-
-  const templates = {
-    classic: (data) => `
-      <div class="classic-template" id="resume-content">
-        ${data.photo ? `<img src="${data.photo}" class="profile-pic" alt="Profile Photo">` : ''}
-        <h1>${data.name}</h1>
-        <p><strong>${data.title}</strong></p>
-        <p>Email: ${data.email}</p>
-        <p><strong>Objective:</strong> ${data.objective}</p>
-        <p><strong>Skills:</strong></p>
-        <ul>${data.skills.map(skill => `<li>${skill}</li>`).join('')}</ul>
-        <p><strong>Hobbies:</strong></p>
-        <ul>${data.hobbies.map(hobby => `<li>${hobby}</li>`).join('')}</ul>
-        <p><strong>Experience:</strong><br/>${data.experience.replace(/\n/g, '<br/>')}</p>
-        <p><strong>Education:</strong><br/>${data.education.replace(/\n/g, '<br/>')}</p>
-      </div>
-    `,
-
-    modern: (data) => `
-      <div class="modern-template" id="resume-content">
-        ${data.photo ? `<img src="${data.photo}" class="profile-pic" alt="Profile Photo">` : ''}
-        <h1>${data.name}</h1>
-        <h3>${data.title}</h3>
-        <p>${data.email}</p>
-        <p><strong>Objective:</strong> ${data.objective}</p>
-        <p><strong>Skills:</strong></p>
-        <ul>${data.skills.map(skill => `<li>${skill}</li>`).join('')}</ul>
-        <p><strong>Hobbies:</strong></p>
-        <ul>${data.hobbies.map(hobby => `<li>${hobby}</li>`).join('')}</ul>
-        <p><strong>Experience:</strong><br/>${data.experience.replace(/\n/g, '<br/>')}</p>
-        <p><strong>Education:</strong><br/>${data.education.replace(/\n/g, '<br/>')}</p>
-      </div>
-    `,
-
-    premium: (data) => `
-      <div class="premium-template" id="resume-content">
-        ${data.photo ? `<img src="${data.photo}" class="profile-pic" alt="Profile Photo">` : ''}
-        <h1>${data.name}</h1>
-        <h4>${data.title}</h4>
-        <p>${data.email}</p>
-        <p><strong>Objective:</strong> ${data.objective}</p>
-        <p><strong>Skills:</strong></p>
-        <ul>${data.skills.map(skill => `<li>${skill}</li>`).join('')}</ul>
-        <p><strong>Hobbies:</strong></p>
-        <ul>${data.hobbies.map(hobby => `<li>${hobby}</li>`).join('')}</ul>
-        <p><strong>Experience:</strong><br/>${data.experience.replace(/\n/g, '<br/>')}</p>
-        <p><strong>Education:</strong><br/>${data.education.replace(/\n/g, '<br/>')}</p>
-      </div>
-    `
+let selectedHTML = "";
+function generateResume() {
+  const data = {
+    name: document.getElementById('name').value,
+    title: document.getElementById('title').value,
+    email: document.getElementById('email').value,
+    objective: document.getElementById('objective').value,
+    skills: document.getElementById('skills').value.split(',').map(s => s.trim()),
+    hobbies: document.getElementById('hobbies').value.split(',').map(h => h.trim()),
+    experience: document.getElementById('experience').value,
+    education: document.getElementById('education').value,
+    template: document.getElementById('template').value
   };
 
-  const generate = () => {
-    const data = {
-      name: document.getElementById("name").value,
-      title: document.getElementById("title").value,
-      email: document.getElementById("email").value,
-      objective: document.getElementById("objective").value,
-      skills: document.getElementById("skills").value.split(',').map(s => s.trim()),
-      hobbies: document.getElementById("hobbies").value.split(',').map(h => h.trim()),
-      experience: document.getElementById("experience").value,
-      education: document.getElementById("education").value,
-      photo: profileImageBase64
-    };
+  let html = `<div id='resume-content' class='${data.template}-template'>
+    <h1>${data.name}</h1>
+    <p><strong>${data.title}</strong></p>
+    <p>Email: ${data.email}</p>
+    <p><strong>Objective:</strong> ${data.objective}</p>
+    <p><strong>Skills:</strong></p><ul>${data.skills.map(s => `<li>${s}</li>`).join('')}</ul>
+    <p><strong>Hobbies:</strong></p><ul>${data.hobbies.map(h => `<li>${h}</li>`).join('')}</ul>
+    <p><strong>Experience:</strong><br>${data.experience.replace(/\n/g, '<br>')}</p>
+    <p><strong>Education:</strong><br>${data.education.replace(/\n/g, '<br>')}</p>
+  </div>`;
 
-    const selected = document.getElementById("template-select").value;
-    const preview = document.getElementById("resume-preview");
-    preview.innerHTML = templates[selected](data);
-  };
+  document.getElementById("resume-preview").innerHTML = html;
+  selectedHTML = html;
+}
 
-  document.getElementById("generate-btn").addEventListener("click", generate);
+async function downloadPDF() {
+  const selected = document.getElementById("template").value;
+  if (selected === "premium") {
+    alert("Redirecting to payment before download...");
+    window.open("https://www.paypal.com/ncp/payment/5LGY8MCMWWXR4", "_blank");
+    return;
+  }
 
-  document.getElementById("download-btn").addEventListener("click", async () => {
-    const content = document.getElementById("resume-content");
-    if (!content) {
-      alert("Please generate your resume first!");
-      return;
-    }
-
-    const canvas = await html2canvas(content, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jspdf.jsPDF("p", "mm", "a4");
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save("resume.pdf");
-  });
+  const resume = document.getElementById("resume-content");
+  if (!resume) {
+    alert("Please generate your resume first.");
+    return;
+  }
+  const canvas = await html2canvas(resume);
+  const img = canvas.toDataURL("image/png");
+  const pdf = new jspdf.jsPDF();
+  const width = pdf.internal.pageSize.getWidth();
+  const height = (canvas.height * width) / canvas.width;
+  pdf.addImage(img, 'PNG', 0, 0, width, height);
+  pdf.save("resume.pdf");
+}
 </script>
 </body>
 </html>
