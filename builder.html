@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>FreshCV Builder</title>
-  <link rel="icon" type="image/png" href="Assets/ChatGPT_Image_Jun_19__2025__02_37_40_PM-removebg-preview.png">
+  <link rel="icon" type="image/png" href="Assets/favicon.png" sizes="64x64">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
@@ -64,88 +66,202 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     .premium-template h1 { color: #f39c12; }
+    .profile-pic {
+      width: 120px;
+      height: 120px;
+      border-radius: 10px;
+      object-fit: cover;
+      margin-bottom: 15px;
+    }
+    .file-upload-wrapper {
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+    }
+    .custom-file-upload {
+      padding: 10px 16px;
+      background-color: #2196F3;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.3s;
+    }
+    .custom-file-upload:hover {
+      background-color: #1976D2;
+    }
+    .custom-file-upload input[type="file"] {
+      display: none;
+    }
+    #file-name {
+      margin-left: 10px;
+      font-size: 14px;
+      color: #555;
+    }
+    #crop-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    #crop-box {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    #crop-box img {
+      max-width: 100%;
+      max-height: 400px;
+    }
   </style>
 </head>
 <body>
 <div class="container">
   <h1>FreshCV Builder</h1>
+  <label for="photo">Upload Profile Photo</label>
+  <div class="file-upload-wrapper">
+    <label class="custom-file-upload">
+      <input type="file" id="photo" accept="image/*" />
+      Upload Photo
+    </label>
+    <span id="file-name">No file chosen</span>
+  </div>
+
   <label for="name">Full Name</label>
   <input type="text" id="name" placeholder="John Doe" />
+
   <label for="title">Job Title</label>
   <input type="text" id="title" placeholder="Web Developer" />
+
   <label for="email">Email</label>
   <input type="email" id="email" placeholder="you@example.com" />
+
   <label for="objective">Career Objective</label>
-  <textarea id="objective"></textarea>
+  <textarea id="objective" placeholder="To obtain a position..."></textarea>
+
   <label for="skills">Skills (comma-separated)</label>
-  <input type="text" id="skills" />
+  <input type="text" id="skills" placeholder="HTML, CSS, JavaScript" />
+
   <label for="hobbies">Hobbies (comma-separated)</label>
-  <input type="text" id="hobbies" />
+  <input type="text" id="hobbies" placeholder="Reading, Gaming, Traveling" />
+
   <label for="experience">Experience</label>
-  <textarea id="experience"></textarea>
+  <textarea id="experience" placeholder="Company - Role - Duration"></textarea>
+
   <label for="education">Education</label>
-  <textarea id="education"></textarea>
+  <textarea id="education" placeholder="University - Degree - Year"></textarea>
+
   <label for="template">Select Template</label>
   <select id="template">
     <option value="classic">Classic</option>
     <option value="modern">Modern</option>
     <option value="premium">Premium</option>
   </select>
+
   <button onclick="generateResume()">Generate Resume</button>
   <button onclick="downloadPDF()">Download PDF</button>
+
   <div id="resume-preview"></div>
 </div>
+
+<!-- Crop Modal -->
+<div id="crop-modal">
+  <div id="crop-box">
+    <img id="crop-image" src="" />
+    <br>
+    <button onclick="applyCrop()">Apply</button>
+  </div>
+</div>
+
 <script>
-let selectedHTML = "";
-function generateResume() {
-  const data = {
-    name: document.getElementById('name').value,
-    title: document.getElementById('title').value,
-    email: document.getElementById('email').value,
-    objective: document.getElementById('objective').value,
-    skills: document.getElementById('skills').value.split(',').map(s => s.trim()),
-    hobbies: document.getElementById('hobbies').value.split(',').map(h => h.trim()),
-    experience: document.getElementById('experience').value,
-    education: document.getElementById('education').value,
-    template: document.getElementById('template').value
-  };
+  let profileImageBase64 = "";
+  let cropper;
 
-  let html = `<div id='resume-content' class='${data.template}-template'>
-    <h1>${data.name}</h1>
-    <p><strong>${data.title}</strong></p>
-    <p>Email: ${data.email}</p>
-    <p><strong>Objective:</strong> ${data.objective}</p>
-    <p><strong>Skills:</strong></p><ul>${data.skills.map(s => `<li>${s}</li>`).join('')}</ul>
-    <p><strong>Hobbies:</strong></p><ul>${data.hobbies.map(h => `<li>${h}</li>`).join('')}</ul>
-    <p><strong>Experience:</strong><br>${data.experience.replace(/\n/g, '<br>')}</p>
-    <p><strong>Education:</strong><br>${data.education.replace(/\n/g, '<br>')}</p>
-  </div>`;
+  document.getElementById('photo').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    document.getElementById('file-name').textContent = file.name;
 
-  document.getElementById("resume-preview").innerHTML = html;
-  selectedHTML = html;
-}
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById("crop-image").src = e.target.result;
+      document.getElementById("crop-modal").style.display = "flex";
 
-async function downloadPDF() {
-  const selected = document.getElementById("template").value;
-  if (selected === "premium") {
-    alert("Redirecting to payment before download...");
-    window.open("https://www.paypal.com/ncp/payment/5LGY8MCMWWXR4", "_blank");
-    return;
+      if (cropper) cropper.destroy();
+      cropper = new Cropper(document.getElementById("crop-image"), {
+        aspectRatio: 1,
+        viewMode: 1,
+        movable: true,
+        zoomable: true,
+        scalable: false,
+        cropBoxResizable: true
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function applyCrop() {
+    const canvas = cropper.getCroppedCanvas({ width: 300, height: 300 });
+    profileImageBase64 = canvas.toDataURL("image/png");
+    document.getElementById("crop-modal").style.display = "none";
   }
 
-  const resume = document.getElementById("resume-content");
-  if (!resume) {
-    alert("Please generate your resume first.");
-    return;
+  function generateResume() {
+    const data = {
+      name: document.getElementById('name').value,
+      title: document.getElementById('title').value,
+      email: document.getElementById('email').value,
+      objective: document.getElementById('objective').value,
+      skills: document.getElementById('skills').value.split(',').map(s => s.trim()),
+      hobbies: document.getElementById('hobbies').value.split(',').map(h => h.trim()),
+      experience: document.getElementById('experience').value,
+      education: document.getElementById('education').value,
+      template: document.getElementById('template').value
+    };
+
+    let html = `<div id='resume-content' class='${data.template}-template'>`;
+    if (profileImageBase64) {
+      html += `<img src="${profileImageBase64}" class="profile-pic" alt="Profile Photo">`;
+    }
+    html += `
+      <h1>${data.name}</h1>
+      <p><strong>${data.title}</strong></p>
+      <p>Email: ${data.email}</p>
+      <p><strong>Objective:</strong> ${data.objective}</p>
+      <p><strong>Skills:</strong></p><ul>${data.skills.map(s => `<li>${s}</li>`).join('')}</ul>
+      <p><strong>Hobbies:</strong></p><ul>${data.hobbies.map(h => `<li>${h}</li>`).join('')}</ul>
+      <p><strong>Experience:</strong><br>${data.experience.replace(/\n/g, '<br>')}</p>
+      <p><strong>Education:</strong><br>${data.education.replace(/\n/g, '<br>')}</p>
+    </div>`;
+
+    document.getElementById("resume-preview").innerHTML = html;
   }
-  const canvas = await html2canvas(resume);
-  const img = canvas.toDataURL("image/png");
-  const pdf = new jspdf.jsPDF();
-  const width = pdf.internal.pageSize.getWidth();
-  const height = (canvas.height * width) / canvas.width;
-  pdf.addImage(img, 'PNG', 0, 0, width, height);
-  pdf.save("resume.pdf");
-}
+
+  async function downloadPDF() {
+    const selected = document.getElementById("template").value;
+    if (selected === "premium") {
+      alert("Redirecting to payment before download...");
+      window.open("https://www.paypal.com/ncp/payment/5LGY8MCMWWXR4", "_blank");
+      return;
+    }
+
+    const resume = document.getElementById("resume-content");
+    if (!resume) {
+      alert("Please generate your resume first.");
+      return;
+    }
+
+    const canvas = await html2canvas(resume);
+    const img = canvas.toDataURL("image/png");
+    const pdf = new jspdf.jsPDF();
+    const width = pdf.internal.pageSize.getWidth();
+    const height = (canvas.height * width) / canvas.width;
+    pdf.addImage(img, 'PNG', 0, 0, width, height);
+    pdf.save("resume.pdf");
+  }
 </script>
 </body>
 </html>
