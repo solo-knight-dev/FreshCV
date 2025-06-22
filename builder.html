@@ -121,6 +121,8 @@
 <body>
 <div class="container">
   <h1>FreshCV Builder</h1>
+
+  <!-- Upload -->
   <label for="photo">Upload Profile Photo</label>
   <div class="file-upload-wrapper">
     <label class="custom-file-upload">
@@ -171,7 +173,7 @@
 <div id="crop-modal">
   <div id="crop-box">
     <img id="crop-image" src="" />
-    <br>
+    <br><br>
     <button onclick="applyCrop()">Apply</button>
   </div>
 </div>
@@ -179,6 +181,7 @@
 <script>
   let profileImageBase64 = "";
   let cropper;
+  let lastGeneratedTemplate = "";
 
   document.getElementById('photo').addEventListener('change', function(event) {
     const file = event.target.files[0];
@@ -222,6 +225,8 @@
       template: document.getElementById('template').value
     };
 
+    lastGeneratedTemplate = data.template;
+
     let html = `<div id='resume-content' class='${data.template}-template'>`;
     if (profileImageBase64) {
       html += `<img src="${profileImageBase64}" class="profile-pic" alt="Profile Photo">`;
@@ -241,16 +246,15 @@
   }
 
   async function downloadPDF() {
-    const selected = document.getElementById("template").value;
-    if (selected === "premium") {
-      alert("Redirecting to payment before download...");
-      window.open("https://www.paypal.com/ncp/payment/5LGY8MCMWWXR4", "_blank");
-      return;
-    }
-
     const resume = document.getElementById("resume-content");
     if (!resume) {
       alert("Please generate your resume first.");
+      return;
+    }
+
+    if (lastGeneratedTemplate === "premium") {
+      alert("Redirecting to payment before download...");
+      window.open("https://www.paypal.com/ncp/payment/5LGY8MCMWWXR4", "_blank");
       return;
     }
 
