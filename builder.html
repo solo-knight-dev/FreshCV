@@ -252,8 +252,8 @@
       return;
     }
 
-    if (lastGeneratedTemplate === "premium") {
-      alert("Redirecting to payment before download...");
+    if (lastGeneratedTemplate === "premium" && localStorage.getItem("premiumPaid") !== "true") {
+      alert("You need to pay to download the premium template. Redirecting to payment...");
       window.open("https://www.paypal.com/ncp/payment/5LGY8MCMWWXR4", "_blank");
       return;
     }
@@ -266,6 +266,15 @@
     pdf.addImage(img, 'PNG', 0, 0, width, height);
     pdf.save("resume.pdf");
   }
+
+  // ✅ Unlock premium after returning from payment
+  window.onload = function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('paid') === 'true') {
+      localStorage.setItem('premiumPaid', 'true');
+      alert("Payment confirmed! You can now download the premium resume.");
+    }
+  };
 </script>
 </body>
 </html>
